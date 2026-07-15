@@ -4,14 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Voice Actor's League JA | Golden Standard Formatter</title>
-  
+
+  <!-- Open Graph / Social Sharing Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Voice Actor's League JA | Golden Standard Formatter">
+  <meta property="og:description" content="Professional voice‑over script formatting engine. Upload dialogue, set character details, and export a ready‑to‑print script.">
+  <meta property="og:image" content="https://github.com/Cleo876/script-formatter/blob/main/images/image_2026-07-15_155926975.png?raw=true">
+  <meta property="og:image:secure_url" content="https://github.com/Cleo876/script-formatter/blob/main/images/image_2026-07-15_155926975.png?raw=true">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:url" content="https://voiceactorsleague.com/formatter">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Voice Actor's League JA | Golden Standard Formatter">
+  <meta name="twitter:description" content="Professional voice‑over script formatting engine.">
+  <meta name="twitter:image" content="https://github.com/Cleo876/script-formatter/blob/main/images/image_2026-07-15_155926975.png?raw=true">
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- SheetJS for Excel & CSV -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-  <!-- html-docx-js for real .docx export -->
-  <script src="https://cdn.jsdelivr.net/npm/html-docx-js/dist/html-docx.js"></script>
   
   <!-- Google Fonts: Inter (body), Ubuntu (project title), Rajdhani (headers matching logo) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -465,10 +478,6 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             Export PDF
           </button>
-          <button id="downloadDOCXBtn" class="btn-primary flex items-center gap-2 px-6 py-3 rounded-xl bg-[#D4AF37] hover:bg-[#ebd074] shadow-[0_0_15px_rgba(212,175,55,0.4)] cursor-pointer text-black">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            Export DOCX
-          </button>
           <button id="closeModalBottom" class="btn-secondary px-8 py-3 rounded-xl font-bold tracking-wide font-rajdhani cursor-pointer">CLOSE</button>
         </div>
       </div>
@@ -546,7 +555,6 @@
       const closeModalBottom = document.getElementById('closeModalBottom');
       const modalPagesContainer = document.getElementById('modalPagesContainer');
       const downloadPDFBtn = document.getElementById('downloadPDFBtn');
-      const downloadDOCXBtn = document.getElementById('downloadDOCXBtn');
       
       const styleSelect = document.getElementById('style');
       const customStyleInput = document.getElementById('customStyle');
@@ -879,7 +887,7 @@
         previewModal.classList.remove('hidden');
       }
 
-      // ---------- EXPORT FUNCTIONS ----------
+      // ---------- EXPORT FUNCTION (PDF only) ----------
       function exportPDF() {
         const pagesHtml = modalPagesContainer.innerHTML;
         const printWin = window.open('', '_blank');
@@ -891,25 +899,12 @@
         setTimeout(() => printWin.print(), 250);
       }
 
-      function exportDOCX() {
-        const pagesHtml = modalPagesContainer.innerHTML;
-        const fullDocHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${document.querySelector('style').innerHTML}</style></head><body>${pagesHtml}</body></html>`;
-        const converted = htmlDocx.asBlob(fullDocHtml, { orientation: 'portrait', margins: { top: 720, right: 720, bottom: 720, left: 720 } });
-        const url = URL.createObjectURL(converted);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = (document.getElementById('projectTitle').value || 'VAL_Golden_Standard_Script') + '.docx';
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-
       // ---------- EVENT LISTENERS ----------
       previewBtn.addEventListener('click', showPreview);
       closeModal.addEventListener('click', ()=> previewModal.classList.add('hidden'));
       closeModalBottom.addEventListener('click', ()=> previewModal.classList.add('hidden'));
       previewModal.addEventListener('click', (e)=> { if (e.target === previewModal) previewModal.classList.add('hidden'); });
       downloadPDFBtn.addEventListener('click', exportPDF);
-      downloadDOCXBtn.addEventListener('click', exportDOCX);
       
       resetBtn.addEventListener('click', ()=>{
         // Instantly reset the configuration. Alert/Confirm are forbidden.
