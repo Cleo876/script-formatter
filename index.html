@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Voice Actor's League JA | Golden Standard Formatter</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- SheetJS for Excel & CSV -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <!-- html-docx-js for real .docx export -->
+  <script src="https://cdn.jsdelivr.net/npm/html-docx-js/dist/html-docx.js"></script>
+  
+  <!-- Google Fonts: Inter (body), Ubuntu (project title), Rajdhani (headers matching logo) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ---------- Theme Variables & Base ---------- */
+    :root {
+      --val-green: #0CDA33; /* Neon Green from logo */
+      --val-green-glow: rgba(12, 218, 51, 0.4);
+      --val-gold: #D4AF37;  /* Metallic Gold from logo */
+      --val-dark: #0B0C0E;  /* Deep Charcoal background */
+      --val-surface: #15171A; /* Elevated Surface */
+      --val-border: #2A2D33;
+    }
+
+    body {
+      background-color: var(--val-dark);
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      /* Subtle gold dot pattern mimicking the logo background */
+      background-image: radial-gradient(rgba(212, 175, 55, 0.15) 1px, transparent 1px);
+      background-size: 32px 32px;
+      background-attachment: fixed;
+    }
+
+    /* Gradient overlay to keep the dots subtle and focus on content */
+    .bg-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(21, 23, 26, 0.8) 0%, var(--val-dark) 80%);
+      z-index: -1;
+    }
+
+    h1, h2, h3, .font-rajdhani {
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    /* ---------- Premium UI Elements ---------- */
+    .val-section {
+      background-color: var(--val-surface);
+      border: 1px solid var(--val-border);
+      border-top: 3px solid var(--val-gold);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .project-title-input {
+      font-family: 'Ubuntu', serif;
+      background-color: #070809;
+      border: 1px solid var(--val-border);
+      color: #fff;
+      transition: all 0.3s ease;
+    }
+    
+    .val-input {
+      background-color: #070809;
+      border: 1px solid var(--val-border);
+      color: #e2e8f0;
+      transition: all 0.3s ease;
+    }
+    
+    /* Interactive Hover Glows */
+    .val-input:hover, .project-title-input:hover {
+      border-color: var(--val-green);
+      box-shadow: 0 0 12px var(--val-green-glow);
+    }
+    
+    .val-input:focus, .project-title-input:focus {
+      border-color: var(--val-green);
+      box-shadow: 0 0 0 1px var(--val-green), 0 0 15px var(--val-green-glow);
+      outline: none;
+    }
+    
+    /* Validation Error Styles */
+    .input-error {
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.6) !important;
+      animation: pulse-red 2s infinite;
+    }
+    
+    @keyframes pulse-red {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    /* Custom Dropdown styling to override OS highlights */
+    select.val-input {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url('data:image/svg+xml;utf8,<svg fill="%23D4AF37" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 40px;
+    }
+    select.val-input option {
+      background-color: var(--val-dark);
+      color: #fff;
+      padding: 10px;
+    }
+
+    /* Custom Scrollbar for dark theme */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--val-dark); }
+    ::-webkit-scrollbar-thumb { background: var(--val-border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--val-green); }
+
+    /* ---------- Tooltip ---------- */
+    .tooltip-trigger {
+      position: relative;
+      cursor: help;
+      border-bottom: 1px dotted var(--val-gold);
+      color: var(--val-gold);
+    }
+    .tooltip-trigger:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .tooltip-text {
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      background: #000;
+      color: var(--val-gold);
+      border: 1px solid var(--val-gold);
+      padding: 6px 10px;
+      border-radius: 6px;
+      position: absolute;
+      z-index: 50;
+      bottom: 130%;
+      left: 50%;
+      transform: translateX(-50%) translateY(5px);
+      white-space: nowrap;
+      font-size: 0.8rem;
+      pointer-events: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .ghost-placeholder::placeholder {
+      color: #4b5563;
+      font-style: italic;
+    }
+
+    /* ---------- Buttons ---------- */
+    .btn-primary {
+      background-color: var(--val-green);
+      color: #000;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+      box-shadow: 0 0 15px var(--val-green-glow);
+      border: 1px solid transparent;
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+      background-color: #0ee939;
+      box-shadow: 0 0 25px rgba(12, 218, 51, 0.6);
+      transform: translateY(-2px);
+    }
+    .btn-secondary {
+      background-color: #1A1C1E;
+      color: #fff;
+      border: 1px solid #333;
+      transition: all 0.3s ease;
+    }
+    .btn-secondary:hover {
+      background-color: #25282c;
+      border-color: var(--val-gold);
+      color: var(--val-gold);
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+    }
+
+    /* ---------- File Dropzone ---------- */
+    .dropzone {
+      border: 2px dashed var(--val-border);
+      background-color: rgba(7, 8, 9, 0.5);
+      transition: all 0.3s ease;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--val-green);
+      background-color: rgba(12, 218, 51, 0.05);
+      box-shadow: inset 0 0 20px rgba(12, 218, 51, 0.1), 0 0 15px var(--val-green-glow);
+    }
+
+    /* ---------- Document Preview & Print Styles (Strictly Isolated & 1:1 A4 Scaled) ---------- */
+    .script-preview-page, .script-preview-page * {
+      color: #000 !important; /* Force black text for document */
+    }
+    .script-preview-page {
+      width: 210mm !important;           /* Strict A4 width */
+      min-height: 297mm !important;      /* Strict A4 height */
+      background: white !important;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      margin: 0 auto 20px;
+      padding: 25.4mm !important;        /* Strict 1-inch margins */
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      font-size: 12pt !important;        /* Base Standard Body Size */
+      line-height: 1.5 !important;
+      position: relative;
+      page-break-after: always;
+    }
+    
+    @media print {
+      body { background: white !important; background-image: none !important; }
+      .bg-overlay { display: none !important; }
+      .no-print { display: none !important; }
+      .script-preview-page {
+        box-shadow: none;
+        margin: 0;
+        padding: 25.4mm !important; /* Retain standard print margins */
+        page-break-after: always;
+        width: auto !important;
+        min-height: auto !important;
+      }
+      @page { size: A4; margin: 0; }
+    }
+
+    /* Document Internal Elements (Isolated to exact physical points mapping) */
+    .script-preview-page .char-name {
+      text-align: center; font-weight: bold; text-transform: uppercase;
+      font-size: 14pt !important; margin-top: 24pt; margin-bottom: 4pt;
+    }
+    .script-preview-page .cue-expression {
+      text-align: center; color: #555 !important; font-style: italic; margin-bottom: 8pt;
+      font-size: 12pt !important;
+    }
+    .script-preview-page .cue-expression::before { content: '['; }
+    .script-preview-page .cue-expression::after  { content: ']'; }
+    .script-preview-page .dialogue-line {
+      text-align: center; margin: 6pt 0; line-height: 1.5; font-size: 12pt !important;
+    }
+    .script-preview-page .sfx-line {
+      text-align: left; margin: 12pt 0; color: #333 !important; font-weight: bold; font-size: 12pt !important;
+    }
+    .script-preview-page .line-with-note {
+      display: flex; align-items: flex-start; justify-content: center; gap: 12pt; margin: 8pt 0;
+    }
+    .script-preview-page .line-with-note .dialogue-col { flex: 1; text-align: center; min-width: 0; }
+    .script-preview-page .line-with-note .expression-note {
+      width: 160px; background: #fffde7 !important; border: 1px solid #fbc02d !important;
+      border-radius: 6px; padding: 6pt 8pt; font-size: 10pt !important; color: #5d4037 !important;
+      position: relative; flex-shrink: 0; word-wrap: break-word; line-height: 1.4;
+    }
+    .script-preview-page .line-with-note .expression-note::before {
+      content: ''; position: absolute; left: -8px; top: 8px; width: 0; height: 0;
+      border-top: 6px solid transparent; border-bottom: 6px solid transparent;
+      border-right: 8px solid #fbc02d;
+    }
+    .script-preview-page .cards-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 15pt; margin: 20pt 0;
+    }
+    .script-preview-page .doc-card-item {
+      border: 1px solid #ddd !important; border-radius: 10px; padding: 12pt;
+      text-align: center; background: #fafafa !important;
+      display: flex; flex-direction: column; items-center; align-items: center;
+    }
+    .script-preview-page .doc-card-item img {
+      width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 8pt;
+      border: 2px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-overlay"></div>
+
+  <!-- Custom Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-3 pointer-events-none w-full max-w-md px-4"></div>
+
+  <!-- Main container -->
+  <div class="max-w-7xl mx-auto px-4 py-12 relative z-10 flex flex-col min-h-screen">
+    
+    <!-- Executive Header with Logo -->
+    <header class="mb-12 text-center flex flex-col items-center">
+      <div class="mb-6 relative group">
+        <div class="absolute -inset-1 bg-gradient-to-r from-[#0CDA33] to-[#D4AF37] rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+        <img src="https://github.com/Cleo876/script-formatter/blob/main/images/image_2026-07-15_155926975.png?raw=true" alt="VAL Logo" 
+             class="relative w-36 h-36 object-contain rounded-3xl shadow-[0_0_20px_rgba(0,0,0,0.8)] border border-[#2A2D33] bg-[#070809]">
+      </div>
+      
+      <div class="inline-block mb-4 relative">
+        <h1 class="text-5xl font-bold tracking-wider text-[#0CDA33] font-rajdhani drop-shadow-[0_0_15px_rgba(12,218,51,0.3)]">
+          VOICE ACTOR'S LEAGUE JA
+        </h1>
+        <div class="h-1 w-1/2 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mx-auto mt-2"></div>
+      </div>
+      <p class="text-gray-400 mt-2 text-lg uppercase tracking-widest font-rajdhani">Script Formatter <span class="text-[#D4AF37]">|</span> Golden Standard</p>
+    </header>
+
+    <!-- ========== PROJECT TITLE ========== -->
+    <section class="val-section rounded-2xl p-8 mb-8">
+      <label class="block text-sm font-medium mb-2 text-gray-400 uppercase tracking-wider font-rajdhani">Project Title</label>
+      <input type="text" id="projectTitle" placeholder="Enter Official Project Title"
+        class="project-title-input w-full rounded-xl p-4 text-3xl font-semibold shadow-inner transition cursor-text">
+    </section>
+
+    <!-- ========== METADATA SECTION ========== -->
+    <section class="val-section rounded-2xl p-8 mb-8">
+      <h2 class="text-2xl font-semibold mb-6 text-white tracking-wide border-b border-[#2A2D33] pb-2 font-rajdhani">Project Metadata</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Job Description -->
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-300">
+            Job Description <span class="text-red-500">*</span>
+            <span class="tooltip-trigger ml-1">ⓘ
+              <span class="tooltip-text">Describe the project, world, and player role. Required for generation.</span>
+            </span>
+          </label>
+          <textarea rows="3" id="jobDesc"
+            class="val-input w-full rounded-xl p-4 ghost-placeholder shadow-inner cursor-text"
+            placeholder="e.g. An action-packed fantasy game where the hero frees villages..."></textarea>
+        </div>
+        <!-- Art Direction -->
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-300">
+            Art Direction <span class="text-red-500">*</span>
+            <span class="tooltip-trigger ml-1">ⓘ
+              <span class="tooltip-text">Describe the voice style: weathered, brave, calm, etc. Required for generation.</span>
+            </span>
+          </label>
+          <textarea rows="3" id="artDirection"
+            class="val-input w-full rounded-xl p-4 ghost-placeholder shadow-inner cursor-text"
+            placeholder="e.g. Weathered, brave, calm, determined..."></textarea>
+        </div>
+        <!-- Category -->
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-300">Category</label>
+          <select id="category" class="val-input w-full rounded-xl p-3 shadow-inner cursor-pointer">
+            <option value="">-- Select --</option>
+            <option>Internet Video</option>
+            <option>Online Commercial</option>
+            <option>Video Games</option>
+            <option>Characters</option>
+          </select>
+        </div>
+        <!-- Industry -->
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-300">Industry</label>
+          <select id="industry" class="val-input w-full rounded-xl p-3 shadow-inner cursor-pointer">
+            <option value="">-- Select --</option>
+            <option>Hospitality</option>
+            <option>Games</option>
+            <option>Advertising</option>
+            <option>Animation</option>
+          </select>
+        </div>
+        <!-- Style -->
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-300">
+            Style (overall undertone)
+            <span class="tooltip-trigger ml-1">ⓘ
+              <span class="tooltip-text">The primary emotional driver of the delivery.</span>
+            </span>
+          </label>
+          <select id="style" class="val-input w-full rounded-xl p-3 shadow-inner cursor-pointer transition-all">
+            <option value="">-- Select --</option>
+            <option>Gritty</option>
+            <option>Urban/Street</option>
+            <option>Intelligent</option>
+            <option>Warm</option>
+            <option>Smooth</option>
+            <option>Energetic</option>
+            <option>Measured</option>
+            <option>Frightened</option>
+            <option>Authentic</option>
+            <option value="custom">Custom (Write your own)...</option>
+          </select>
+          <!-- Hidden Custom Style Input -->
+          <input type="text" id="customStyle" placeholder="Enter bespoke style direction..." 
+                 class="val-input w-full rounded-xl p-3 shadow-inner mt-3 hidden opacity-0 transition-opacity duration-300 ghost-placeholder cursor-text">
+        </div>
+        <!-- Language -->
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-300">Language</label>
+          <select id="language" class="val-input w-full rounded-xl p-3 shadow-inner cursor-pointer"></select>
+        </div>
+        <!-- Accent -->
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-300">Accent</label>
+          <select id="accent" class="val-input w-full rounded-xl p-3 shadow-inner cursor-pointer"></select>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== FILE UPLOAD ========== -->
+    <section class="val-section rounded-2xl p-8 mb-8 border-t-[#0CDA33]">
+      <h2 class="text-2xl font-semibold mb-2 text-white font-rajdhani">Data Ingestion (Excel or CSV)</h2>
+      <p class="text-sm text-gray-400 mb-6">
+        Required columns: <strong class="text-[#0CDA33]">Character Name</strong>, <strong class="text-[#0CDA33]">Dialogue</strong>,
+        <strong class="text-[#0CDA33]">Expression</strong> (character emotion), <strong class="text-[#0CDA33]">SFX</strong> (action sounds),
+        <strong class="text-[#0CDA33]">Expression Direction</strong> (line-specific direction).
+      </p>
+      <div id="dropZone" class="dropzone rounded-2xl p-12 text-center cursor-pointer flex flex-col items-center justify-center">
+        <svg class="w-12 h-12 text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+        <p class="text-gray-300 text-lg font-medium">Drag & drop your .xlsx or .csv file here</p>
+        <p class="text-gray-500 mt-2 text-sm">or click to browse local files</p>
+        <input type="file" id="fileInput" accept=".xlsx,.csv" class="hidden">
+      </div>
+      <p id="uploadStatus" class="text-sm mt-4 text-[#0CDA33] font-medium tracking-wide text-center"></p>
+    </section>
+
+    <!-- ========== CHARACTER CARDS ========== -->
+    <section id="charCardsSection" class="val-section rounded-2xl p-8 mb-8 hidden">
+      <h2 class="text-2xl font-semibold mb-4 text-white font-rajdhani">Character Roster Setup</h2>
+      <p class="text-sm text-gray-400 mb-6">Configure each unique character's vocal age, picture, and lore description.</p>
+      <div id="charCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+    </section>
+
+    <!-- ========== ACTIONS ========== -->
+    <div class="flex flex-wrap gap-6 justify-center my-8 no-print flex-grow">
+      <button id="previewBtn" class="btn-primary font-rajdhani text-lg py-4 px-10 rounded-xl cursor-pointer">
+        Generate Document Preview
+      </button>
+      <button id="resetBtn" class="btn-secondary font-rajdhani text-lg py-4 px-10 rounded-xl cursor-pointer">
+        Reset Configuration
+      </button>
+    </div>
+
+    <!-- Executive Footer -->
+    <footer class="mt-12 border-t border-[#2A2D33] pt-10 pb-6 text-center flex flex-col items-center no-print">
+      <img src="https://github.com/Cleo876/script-formatter/blob/main/images/image_2026-07-15_155926975.png?raw=true" alt="VAL Logo Small" 
+           class="w-12 h-12 object-contain rounded-xl shadow-[0_0_10px_rgba(12,218,51,0.2)] mb-4 grayscale hover:grayscale-0 transition-all duration-500 cursor-pointer">
+      <p class="text-[#D4AF37] font-rajdhani text-lg font-bold tracking-widest mb-1">VOICE ACTOR'S LEAGUE JA</p>
+      <p class="text-gray-500 text-sm max-w-2xl mx-auto leading-relaxed mb-4 font-inter">
+        Proprietary Document Formatting Engine. The standard in professional voice-over script generation, built for our clients, partners, and creators.
+      </p>
+      <p class="text-gray-600 text-[10px] tracking-wider uppercase font-inter font-semibold">
+        &copy; 2026 Voice Actor's League Ja. All Rights Reserved.
+      </p>
+    </footer>
+
+    <!-- ========== PAGINATED PREVIEW MODAL ========== -->
+    <div id="previewModal" class="fixed inset-0 bg-black bg-opacity-90 flex items-start justify-center z-[100] hidden overflow-auto p-4 backdrop-blur-sm">
+      <div class="bg-[#15171A] border border-[#2A2D33] rounded-2xl shadow-2xl w-full max-w-6xl my-8 relative flex flex-col overflow-hidden">
+        
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center p-6 border-b border-[#2A2D33] bg-[#0B0C0E]">
+          <h3 class="text-2xl font-bold text-white font-rajdhani flex items-center gap-3">
+            <span class="w-2 h-6 bg-[#0CDA33] rounded-full"></span> Document Preview <span class="text-gray-500 text-sm ml-2">(Paginated A4)</span>
+          </h3>
+          <button id="closeModal" class="text-gray-500 hover:text-white transition text-4xl leading-none cursor-pointer">&times;</button>
+        </div>
+        
+        <!-- Modal Body (White Document Area) -->
+        <div id="modalPagesContainer" class="p-8 flex flex-col items-center space-y-8 overflow-y-auto max-h-[70vh] bg-[#070809]"></div>
+        
+        <!-- Modal Footer -->
+        <div class="p-6 border-t border-[#2A2D33] bg-[#0B0C0E] flex flex-wrap justify-end gap-4 no-print">
+          <button id="downloadPDFBtn" class="btn-primary flex items-center gap-2 px-6 py-3 rounded-xl cursor-pointer">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            Export PDF
+          </button>
+          <button id="downloadDOCXBtn" class="btn-primary flex items-center gap-2 px-6 py-3 rounded-xl bg-[#D4AF37] hover:bg-[#ebd074] shadow-[0_0_15px_rgba(212,175,55,0.4)] cursor-pointer text-black">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            Export DOCX
+          </button>
+          <button id="closeModalBottom" class="btn-secondary px-8 py-3 rounded-xl font-bold tracking-wide font-rajdhani cursor-pointer">CLOSE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- STATE ----------
+      let parsedRows = [];
+      let uniqueCharacters = [];
+      let characterDataMap = new Map();
+
+      const vocalAges = ['Child (5-12)', 'Teen (13-17)', 'Young Adult (18-25)', 'Adult (26-40)', 'Middle-Aged (41-60)', 'Senior (60+)'];
+      // Upgraded specific dropdown limits
+      const languageList = [
+        { code: 'en-CB', name: 'English (Caribbean)' },
+        { code: 'en-US', name: 'English (US)' }
+      ];
+      const accentList = [
+        'Jamaican Patois', 
+        'General American', 
+        'Corporate / Professional Tone'
+      ];
+
+      // Populate dropdowns
+      function populateDropdown(id, options, valueKey, textKey) {
+        const select = document.getElementById(id);
+        select.innerHTML = '<option value="">-- Select --</option>';
+        options.forEach(opt => {
+          const val = valueKey ? opt[valueKey] : opt;
+          const txt = textKey ? opt[textKey] : opt;
+          const option = document.createElement('option');
+          option.value = val;
+          option.textContent = txt;
+          select.appendChild(option);
+        });
+      }
+      populateDropdown('language', languageList, 'code', 'name');
+      populateDropdown('accent', accentList);
+
+      // Custom Toast UI Notification System (Replaces alert)
+      function showToast(message, type = 'error') {
+        const toastContainer = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        const colorClass = type === 'error' ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'border-[#0CDA33] shadow-[0_0_15px_rgba(12,218,51,0.5)]';
+        const icon = type === 'error' ? '⚠️' : '✅';
+        
+        toast.className = `bg-[#1A1C1E] border-l-4 ${colorClass} text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-auto`;
+        toast.innerHTML = `<span class="text-xl">${icon}</span> <span class="font-medium font-inter">${message}</span>`;
+        toastContainer.appendChild(toast);
+        
+        // Trigger enter animation
+        requestAnimationFrame(() => {
+          toast.classList.remove('translate-y-10', 'opacity-0');
+        });
+        
+        // Auto remove
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-y-10');
+          setTimeout(() => toast.remove(), 300);
+        }, 4000);
+      }
+
+      // DOM refs
+      const dropZone = document.getElementById('dropZone');
+      const fileInput = document.getElementById('fileInput');
+      const uploadStatus = document.getElementById('uploadStatus');
+      const charCardsSection = document.getElementById('charCardsSection');
+      const charCardsContainer = document.getElementById('charCardsContainer');
+      const previewBtn = document.getElementById('previewBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const previewModal = document.getElementById('previewModal');
+      const closeModal = document.getElementById('closeModal');
+      const closeModalBottom = document.getElementById('closeModalBottom');
+      const modalPagesContainer = document.getElementById('modalPagesContainer');
+      const downloadPDFBtn = document.getElementById('downloadPDFBtn');
+      const downloadDOCXBtn = document.getElementById('downloadDOCXBtn');
+      
+      const styleSelect = document.getElementById('style');
+      const customStyleInput = document.getElementById('customStyle');
+
+      
+      // Dynamic Custom Style Field Logic
+      styleSelect.addEventListener('change', (e) => {
+        if (e.target.value === 'custom') {
+          customStyleInput.classList.remove('hidden');
+          requestAnimationFrame(() => { customStyleInput.classList.remove('opacity-0'); });
+        } else {
+          customStyleInput.classList.add('opacity-0');
+          setTimeout(() => customStyleInput.classList.add('hidden'), 300);
+          customStyleInput.value = ''; // clear when hidden
+        }
+      });
+
+      // ---------- FILE HANDLING ----------
+      dropZone.addEventListener('click', () => fileInput.click());
+      dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+      dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
+      });
+      fileInput.addEventListener('change', (e) => { if (e.target.files[0]) processFile(e.target.files[0]); });
+
+      function processFile(file) {
+        uploadStatus.innerHTML = '<span class="animate-pulse">Processing schema...</span>';
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const sheetData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+            if (sheetData.length < 2) throw new Error('File has no data rows.');
+            
+            const headers = sheetData[0].map(h => String(h).trim().toLowerCase());
+            const idxChar = headers.findIndex(h => h.includes('character') && h.includes('name'));
+            const idxDialogue = headers.findIndex(h => h === 'dialogue' || h.includes('dialogue'));
+            const idxExpression = headers.findIndex(h => h === 'expression' || h.includes('expression'));
+            const idxSfx = headers.findIndex(h => h === 'sfx' || h.includes('sfx'));
+            const idxExprDir = headers.findIndex(h => h.includes('expression direction') || h.includes('direction'));
+            
+            if (idxChar === -1 || idxDialogue === -1) throw new Error('Missing "Character Name" or "Dialogue" column.');
+            
+            parsedRows = [];
+            for (let i = 1; i < sheetData.length; i++) {
+              const row = sheetData[i];
+              parsedRows.push({
+                character: String(row[idxChar] || '').trim(),
+                dialogue: String(row[idxDialogue] || '').trim(),
+                expression: idxExpression !== -1 ? String(row[idxExpression] || '').trim() : '',
+                sfx: idxSfx !== -1 ? String(row[idxSfx] || '').trim() : '',
+                expressionDirection: idxExprDir !== -1 ? String(row[idxExprDir] || '').trim() : ''
+              });
+            }
+            parsedRows = parsedRows.filter(r => r.character || r.dialogue || r.sfx);
+            if (!parsedRows.length) throw new Error('No valid rows found.');
+            
+            uploadStatus.innerHTML = `✅ Successfully loaded ${parsedRows.length} lines. Discovered ${new Set(parsedRows.map(r => r.character).filter(Boolean)).size} unique characters.`;
+            showToast('Script Ingestion Successful.', 'success');
+            buildCharacterCards();
+          } catch (err) {
+            uploadStatus.innerHTML = '<span class="text-red-500">Error: ' + err.message + '</span>';
+            showToast('Failed to load file: ' + err.message, 'error');
+            console.error(err);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      }
+
+      // ---------- UI CHARACTER CARDS (Upgraded Avatar Layout) ----------
+      function buildCharacterCards() {
+        charCardsContainer.innerHTML = '';
+        characterDataMap.clear();
+        const charStats = new Map();
+        parsedRows.forEach(r => {
+          if (!r.character) return;
+          if (!charStats.has(r.character)) charStats.set(r.character, { count: 0, words: 0 });
+          const s = charStats.get(r.character);
+          s.count++;
+          if (r.dialogue) s.words += r.dialogue.split(/\s+/).filter(Boolean).length;
+        });
+        uniqueCharacters = Array.from(charStats.keys());
+        if (!uniqueCharacters.length) { charCardsSection.classList.add('hidden'); return; }
+        charCardsSection.classList.remove('hidden');
+        
+        uniqueCharacters.forEach(name => {
+          const stats = charStats.get(name);
+          const speechMin = stats.words / 150;
+          const h = Math.floor(speechMin / 60), m = Math.floor(speechMin % 60), s = Math.round((speechMin % 1) * 60);
+          const timeStr = (h ? h+' hr ' : '') + (m || h ? m+' mins ' : '') + s+' s';
+          
+          const card = document.createElement('div');
+          card.className = 'bg-[#1A1C1E] border border-[#2A2D33] rounded-xl p-6 shadow-lg flex flex-col items-center relative overflow-hidden group hover:border-[#D4AF37]/40 transition-colors duration-300';
+          card.innerHTML = `
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#0CDA33] to-transparent opacity-50 group-hover:opacity-100 transition"></div>
+            
+            <!-- Clickable Circular Avatar Upload -->
+            <div class="avatar-upload-container relative w-28 h-28 mx-auto mt-2 mb-4 rounded-full border-2 border-[#2A2D33] bg-[#070809] flex items-center justify-center cursor-pointer group/avatar shadow-inner hover:border-[#0CDA33] hover:shadow-[0_0_15px_rgba(12,218,51,0.3)] transition-all">
+              <img class="picture-preview absolute inset-0 w-full h-full object-cover rounded-full hidden" src="" alt="preview">
+              <!-- Placeholder Camera/Profile Icon -->
+              <svg class="placeholder-icon w-10 h-10 text-gray-600 group-hover/avatar:text-[#0CDA33] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              <!-- Hover Overlay -->
+              <div class="absolute inset-0 bg-black/60 rounded-full hidden group-hover/avatar:flex items-center justify-center transition-all backdrop-blur-sm">
+                <span class="text-[11px] font-bold text-[#0CDA33] tracking-widest">UPLOAD</span>
+              </div>
+              <input type="file" class="picture-input hidden" accept="image/*">
+            </div>
+
+            <!-- Character Details -->
+            <h3 class="font-bold text-2xl mb-1 text-white text-center w-full truncate font-rajdhani tracking-wide">${escapeHtml(name)}</h3>
+            <div class="text-xs text-[#0CDA33] mb-5 bg-[#0CDA33]/10 px-4 py-1.5 rounded-full border border-[#0CDA33]/20 font-medium tracking-wide shadow-[0_0_10px_rgba(12,218,51,0.1)]">${stats.count} lines · ${timeStr}</div>
+            
+            <div class="w-full flex flex-col gap-4 text-left">
+              <div>
+                <label class="text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-1.5 block">Vocal Age</label>
+                <select class="vocal-age val-input w-full rounded-lg p-3 text-sm shadow-inner cursor-pointer hover:border-[#0CDA33] hover:shadow-[0_0_8px_rgba(12,218,51,0.2)] transition-all">${vocalAges.map(a => `<option value="${a}">${a}</option>`).join('')}</select>
+              </div>
+              <div>
+                <label class="text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-1.5 block">Character Lore</label>
+                <textarea class="char-desc val-input w-full rounded-lg p-3 text-sm resize-none h-20 shadow-inner ghost-placeholder hover:border-[#0CDA33] hover:shadow-[0_0_8px_rgba(12,218,51,0.2)] transition-all cursor-text" placeholder="Traits, personality..."></textarea>
+              </div>
+            </div>
+          `;
+          
+          const vocalAgeSelect = card.querySelector('.vocal-age');
+          const avatarContainer = card.querySelector('.avatar-upload-container');
+          const pictureInput = card.querySelector('.picture-input');
+          const picturePreview = card.querySelector('.picture-preview');
+          const placeholderIcon = card.querySelector('.placeholder-icon');
+          const charDesc = card.querySelector('.char-desc');
+          
+          characterDataMap.set(name, { vocalAge: vocalAgeSelect.value, pictureDataUrl: '', description: '' });
+          
+          vocalAgeSelect.addEventListener('change', () => characterDataMap.get(name).vocalAge = vocalAgeSelect.value);
+          
+          avatarContainer.addEventListener('click', () => pictureInput.click());
+          
+          pictureInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+              characterDataMap.get(name).pictureDataUrl = ev.target.result;
+              picturePreview.src = ev.target.result;
+              picturePreview.classList.remove('hidden');
+              placeholderIcon.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+          });
+          
+          charDesc.addEventListener('input', () => characterDataMap.get(name).description = charDesc.value);
+          charCardsContainer.appendChild(card);
+        });
+      }
+
+      // ---------- DOCUMENT HTML GENERATION (Strict 1:1 Print A4 Format) ----------
+      function generateDocumentHTML() {
+        const projectTitle = document.getElementById('projectTitle').value || 'Untitled Project';
+        const jobDesc = document.getElementById('jobDesc').value;
+        const artDir = document.getElementById('artDirection').value;
+        const category = document.getElementById('category').value;
+        const industry = document.getElementById('industry').value;
+        
+        let style = document.getElementById('style').value;
+        if (style === 'custom') {
+          style = document.getElementById('customStyle').value.trim() || 'Custom Style';
+        }
+        
+        const lang = document.getElementById('language').selectedOptions[0]?.text || '';
+        const accent = document.getElementById('accent').value;
+
+        let html = '';
+        // Page block: metadata - styled with explicit 'pt' values for Word/PDF 1:1 mapping
+        html += `<div class="page-block" style="break-inside:avoid; text-align:center; margin-bottom:24pt;">`;
+        html += `<h1 style="font-family:'Ubuntu',serif; font-size:24pt; margin-bottom:12pt;">${escapeHtml(projectTitle)}</h1>`;
+        html += `<p style="font-size:12pt; margin-bottom:6pt; text-align:left;"><strong>Job Description:</strong> ${escapeHtml(jobDesc)}</p>`;
+        html += `<p style="font-size:12pt; margin-bottom:12pt; text-align:left;"><strong>Art Direction:</strong> ${escapeHtml(artDir)}</p>`;
+        html += `<p style="font-size:12pt; margin-bottom:6pt;"><strong>Category:</strong> ${category} | <strong>Industry:</strong> ${industry} | <strong>Style:</strong> ${style}</p>`;
+        html += `<p style="font-size:12pt; margin-bottom:6pt;"><strong>Language:</strong> ${lang} | <strong>Accent:</strong> ${accent}</p>`;
+        html += `</div>`;
+
+        // Character cards page - Document styling
+        if (uniqueCharacters.length) {
+          html += `<div class="page-block new-page" style="break-inside:avoid; page-break-before:always;"><h3 style="text-align:center; font-weight:bold; margin-bottom:18pt; font-size: 16pt;">Character Breakdown</h3><div class="cards-grid">`;
+          uniqueCharacters.forEach(name => {
+            const data = characterDataMap.get(name) || { vocalAge:'', pictureDataUrl:'', description:'' };
+            const stats = getCharStats(name);
+            const spMin = stats.words/150;
+            const hh = Math.floor(spMin/60), mm = Math.floor(spMin%60), ss = Math.round((spMin%1)*60);
+            const timeStr = (hh?hh+' hr ':'')+(mm||hh?mm+' mins ':'')+ss+' s';
+            
+            html += `<div class="doc-card-item">`;
+            if (data.pictureDataUrl) html += `<img src="${data.pictureDataUrl}" alt="${escapeHtml(name)}">`;
+            html += `<h4 style="font-weight:bold; font-size:14pt; margin-bottom:4pt;">${escapeHtml(name)}</h4>`;
+            if (data.vocalAge) html += `<p style="font-size:11pt; font-weight:600; margin-bottom:2pt;">🎤 ${escapeHtml(data.vocalAge)}</p>`;
+            html += `<p style="font-size:10pt; color:#555; margin-bottom:8pt;">${stats.count} lines · ${timeStr} (${spMin.toFixed(1)} min)</p>`;
+            if (data.description) html += `<p style="font-size:11pt; border-top:1px solid #eee; padding-top:6pt; margin-top:4pt; line-height: 1.4; text-align:left;">${escapeHtml(data.description)}</p>`;
+            html += `</div>`;
+          });
+          html += `</div></div>`;
+        }
+
+        // Script lines with expression note column
+        let currentChar = '';
+        let isFirstScriptUnit = true; // Track the first line of the script to force a page break
+        
+        parsedRows.forEach(row => {
+          let pageBreakClass = isFirstScriptUnit ? 'new-page' : '';
+          let pageBreakStyle = isFirstScriptUnit ? 'page-break-before:always;' : '';
+          isFirstScriptUnit = false;
+
+          if (row.character && row.character !== currentChar) {
+            currentChar = row.character;
+            html += `<div class="script-unit ${pageBreakClass}" style="break-inside:avoid; ${pageBreakStyle}"><div class="char-name">${escapeHtml(currentChar)}</div>`;
+            if (row.expression) html += `<div class="cue-expression">${escapeHtml(row.expression)}</div>`;
+          } else if (!row.character && currentChar) {
+            html += `<div class="script-unit ${pageBreakClass}" style="break-inside:avoid; ${pageBreakStyle}">`;
+            if (row.expression) html += `<div class="cue-expression">${escapeHtml(row.expression)}</div>`;
+          } else {
+            html += `<div class="script-unit ${pageBreakClass}" style="break-inside:avoid; ${pageBreakStyle}">`;
+          }
+
+          if (row.dialogue) {
+            if (row.expressionDirection) {
+              html += `<div class="line-with-note"><div class="dialogue-col dialogue-line">${escapeHtml(row.dialogue)}</div><div class="expression-note">${escapeHtml(row.expressionDirection)}</div></div>`;
+            } else {
+              html += `<div class="dialogue-line">${escapeHtml(row.dialogue)}</div>`;
+            }
+          }
+          if (row.sfx) html += `<div class="sfx-line">${escapeHtml(row.sfx)}</div>`;
+          html += `</div>`;
+        });
+        return html;
+      }
+
+      function getCharStats(name) {
+        let c=0,w=0;
+        parsedRows.forEach(r=>{ if(r.character===name){ c++; if(r.dialogue) w+=r.dialogue.split(/\s+/).filter(Boolean).length; } });
+        return {count:c, words:w};
+      }
+
+      // ---------- PAGINATION ----------
+      function paginateContent(fullHtml, pageWidthMm=210, pageHeightMm=297, marginMm=25.4) {
+        // Convert to absolute physical screen equivalent for internal simulation
+        const pxPerMm = 3.779527559; 
+        const pageWidthPx = Math.floor(pageWidthMm * pxPerMm);
+        const pageHeightPx = Math.floor(pageHeightMm * pxPerMm);
+        const marginPx = Math.floor(marginMm * pxPerMm);
+        
+        const container = document.createElement('div');
+        container.style.position = 'absolute'; container.style.visibility = 'hidden';
+        container.style.width = pageWidthPx + 'px'; container.style.fontFamily = 'Inter, sans-serif';
+        // Base size simulating standard document
+        container.style.fontSize = '16px'; 
+        container.innerHTML = fullHtml;
+        document.body.appendChild(container);
+        
+        const blocks = Array.from(container.querySelectorAll('.page-block, .script-unit'));
+        const pages = [];
+        let curBlocks = [], curHeight = marginPx;
+        
+        blocks.forEach(block => {
+          // Force a new page if the block has the 'new-page' marker
+          if (block.classList.contains('new-page') && curBlocks.length > 0) {
+            pages.push(curBlocks);
+            curBlocks = [];
+            curHeight = marginPx;
+          }
+
+          const h = block.getBoundingClientRect().height;
+          // Space check - simulate bottom margin allowance
+          if (curHeight + h > pageHeightPx - marginPx && curBlocks.length > 0) {
+            pages.push(curBlocks);
+            curBlocks = [block];
+            curHeight = marginPx + h;
+          } else {
+            curBlocks.push(block);
+            curHeight += h;
+          }
+        });
+        
+        if (curBlocks.length) pages.push(curBlocks);
+        document.body.removeChild(container);
+
+        return pages.map((blocks, idx) => {
+          let pageHtml = `<div class="script-preview-page">`;
+          blocks.forEach(b => pageHtml += b.outerHTML);
+          pageHtml += `<div style="position:absolute; bottom:15mm; right:25.4mm; font-size:10pt; color:#888;">Page ${idx+1}</div>`;
+          pageHtml += `</div>`;
+          return pageHtml;
+        });
+      }
+
+      function showPreview() {
+        // Strict Validation Checks
+        const jobDescInput = document.getElementById('jobDesc');
+        const artDirInput = document.getElementById('artDirection');
+        let hasError = false;
+
+        jobDescInput.classList.remove('input-error');
+        artDirInput.classList.remove('input-error');
+
+        if (!jobDescInput.value.trim()) {
+          jobDescInput.classList.add('input-error');
+          hasError = true;
+        }
+        if (!artDirInput.value.trim()) {
+          artDirInput.classList.add('input-error');
+          hasError = true;
+        }
+
+        if (hasError) {
+          showToast('Job Description & Art Direction are required to generate the Standard.', 'error');
+          return; // Stop execution
+        }
+
+        if (!parsedRows.length) { 
+          showToast('Please ingest a script data file (Excel/CSV) first.', 'error'); 
+          return; 
+        }
+
+        const fullHtml = generateDocumentHTML();
+        const pages = paginateContent(fullHtml, 210, 297, 25.4);
+        modalPagesContainer.innerHTML = pages.join('');
+        previewModal.classList.remove('hidden');
+      }
+
+      // ---------- EXPORT FUNCTIONS ----------
+      function exportPDF() {
+        const pagesHtml = modalPagesContainer.innerHTML;
+        const printWin = window.open('', '_blank');
+        printWin.document.write(`<!DOCTYPE html><html><head><title>Voice Over Script</title>
+          <style>${document.querySelector('style').innerHTML} body{background:white;} .script-preview-page{box-shadow:none;margin:0 auto;page-break-after:always;}</style></head>
+          <body>${pagesHtml}</body></html>`);
+        printWin.document.close();
+        printWin.focus();
+        setTimeout(() => printWin.print(), 250);
+      }
+
+      function exportDOCX() {
+        const pagesHtml = modalPagesContainer.innerHTML;
+        const fullDocHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${document.querySelector('style').innerHTML}</style></head><body>${pagesHtml}</body></html>`;
+        const converted = htmlDocx.asBlob(fullDocHtml, { orientation: 'portrait', margins: { top: 720, right: 720, bottom: 720, left: 720 } });
+        const url = URL.createObjectURL(converted);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = (document.getElementById('projectTitle').value || 'VAL_Golden_Standard_Script') + '.docx';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      // ---------- EVENT LISTENERS ----------
+      previewBtn.addEventListener('click', showPreview);
+      closeModal.addEventListener('click', ()=> previewModal.classList.add('hidden'));
+      closeModalBottom.addEventListener('click', ()=> previewModal.classList.add('hidden'));
+      previewModal.addEventListener('click', (e)=> { if (e.target === previewModal) previewModal.classList.add('hidden'); });
+      downloadPDFBtn.addEventListener('click', exportPDF);
+      downloadDOCXBtn.addEventListener('click', exportDOCX);
+      
+      resetBtn.addEventListener('click', ()=>{
+        // Instantly reset the configuration. Alert/Confirm are forbidden.
+        parsedRows=[]; 
+        uniqueCharacters=[]; 
+        characterDataMap.clear();
+        charCardsContainer.innerHTML=''; 
+        charCardsSection.classList.add('hidden');
+        uploadStatus.innerHTML='';
+        
+        ['jobDesc','artDirection','category','industry','style','language','accent','projectTitle', 'customStyle'].forEach(id => {
+          document.getElementById(id).value='';
+          document.getElementById(id).classList.remove('input-error');
+        });
+        
+        document.getElementById('customStyle').classList.add('hidden', 'opacity-0');
+        showToast('Configuration successfully reset.', 'success');
+      });
+
+      function escapeHtml(text) {
+        const d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
+      }
+    })();
+  </script>
+</body>
+</html>
